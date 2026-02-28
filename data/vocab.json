@@ -1,0 +1,42 @@
+[
+  {
+    "id": "neko",
+    "kana": "ねこ",
+    "kanji": "猫",
+    "romaji": "neko",
+    "english": "cat",
+    "image": "assets/images/neko.png"
+  },
+  {
+    "id": "inu",
+    "kana": "いぬ",
+    "kanji": "犬",
+    "romaji": "inu",
+    "english": "dog",
+    "image": "assets/images/inu.png"
+  },
+  {
+    "id": "kuruma",
+    "kana": "くるま",
+    "kanji": "車",
+    "romaji": "kuruma",
+    "english": "car",
+    "image": "assets/images/kuruma.png"
+  },
+  {
+    "id": "ringo",
+    "kana": "りんご",
+    "kanji": "林檎",
+    "romaji": "ringo",
+    "english": "apple",
+    "image": "assets/images/ringo.png"
+  },
+  {
+    "id": "mizu",
+    "kana": "みず",
+    "kanji": "水",
+    "romaji": "mizu",
+    "english": "water",
+    "image": "assets/images/mizu.png"
+  }
+]
