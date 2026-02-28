@@ -39,7 +39,6 @@ const questionNumberEl = document.getElementById("question-number");
 const questionTotalEl = document.getElementById("question-total");
 
 const timerEl = document.getElementById("timer");
-
 const langSelect = document.getElementById("lang");
 
 // -------------------------
@@ -79,7 +78,8 @@ const STRINGS = {
 function updateLanguage() {
   const lang = langSelect.value;
   document.querySelectorAll("[data-i18n]").forEach(el => {
-    el.textContent = STRINGS[lang][el.dataset.i18n];
+    const key = el.dataset.i18n;
+    el.textContent = STRINGS[lang][key];
   });
 }
 langSelect.addEventListener("change", updateLanguage);
@@ -89,7 +89,10 @@ langSelect.addEventListener("change", updateLanguage);
 // -------------------------
 fetch("data/vocab.json")
   .then(res => res.json())
-  .then(data => vocab = data);
+  .then(data => {
+    vocab = data;
+    updateLanguage();
+  });
 
 // -------------------------
 // START GAME
@@ -153,6 +156,7 @@ function switchScreen(screen) {
 
 backBtn.addEventListener("click", () => {
   if (timerInterval) clearInterval(timerInterval);
+  timerEl.classList.add("hidden");
   switchScreen("start");
 });
 
@@ -161,32 +165,58 @@ backBtn.addEventListener("click", () => {
 // -------------------------
 function buildQuestions(count) {
   const arr = [];
+  let prev = null;
 
   for (let i = 0; i < count; i++) {
-    const type = Math.random() < 0.5 ? "single" : "drag";
+    let q;
+    let attempts = 0;
 
-    if (type === "single") {
-      const correct = vocab[Math.floor(Math.random() * vocab.length)];
-      const distractors = pickRandomExcept(correct.id, 3);
-      const options = shuffle([correct, ...distractors]);
+    do {
+      const type = Math.random() < 0.5 ? "single" : "drag";
 
-      arr.push({
-        type: "single",
-        correctId: correct.id,
-        image: correct.image,
-        options: options.map(o => o.id)
-      });
-    } else {
-      const group = pickRandom(4);
-      arr.push({
-        type: "drag",
-        imageIds: group.map(v => v.id),
-        optionIds: shuffle(group.map(v => v.id))
-      });
-    }
+      if (type === "single") {
+        const correct = vocab[Math.floor(Math.random() * vocab.length)];
+        const distractors = pickRandomExcept(correct.id, 3);
+        const options = shuffle([correct, ...distractors]);
+
+        q = {
+          type: "single",
+          correctId: correct.id,
+          image: correct.image,
+          options: options.map(o => o.id)
+        };
+      } else {
+        const group = pickRandom(4);
+        q = {
+          type: "drag",
+          imageIds: group.map(v => v.id),
+          optionIds: shuffle(group.map(v => v.id))
+        };
+      }
+
+      attempts++;
+      if (attempts > 10) break;
+    } while (
+      prev &&
+      prev.type === q.type &&
+      (
+        (q.type === "single" && prev.correctId === q.correctId) ||
+        (q.type === "drag" && sameSet(prev.imageIds, q.imageIds))
+      )
+    );
+
+    arr.push(q);
+    prev = q;
   }
 
   return arr;
+}
+
+function sameSet(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  const sa = [...a].sort().join(",");
+  const sb = [...b].sort().join(",");
+  return sa === sb;
 }
 
 function pickRandom(n) {
@@ -242,6 +272,7 @@ function renderSingleChoice() {
   imgBox.className = "single-choice-image";
   const img = document.createElement("img");
   img.src = correct.image;
+  img.alt = "";
   imgBox.appendChild(img);
 
   const optBox = document.createElement("div");
@@ -315,6 +346,7 @@ function renderDragDrop() {
 
     const img = document.createElement("img");
     img.src = v.image;
+    img.alt = "";
 
     const target = document.createElement("div");
     target.className = "drop-target";
@@ -325,13 +357,13 @@ function renderDragDrop() {
     zone.appendChild(target);
     imgBox.appendChild(zone);
 
-    // Allow dropping anywhere inside zone
     zone.addEventListener("dragover", e => e.preventDefault());
-    zone.addEventListener("drop", handleDrop);
+    zone.addEventListener("drop", handleDropOnZone);
   });
 
   const answers = document.createElement("div");
   answers.className = "drag-drop-answers";
+  answers.id = "answers-container";
 
   q.optionIds.forEach(id => {
     const v = vocab.find(x => x.id === id);
@@ -348,25 +380,31 @@ function renderDragDrop() {
     card.appendChild(label);
 
     card.addEventListener("dragstart", e => {
-      if (hasChecked) return;
+      if (hasChecked) {
+        e.preventDefault();
+        return;
+      }
       e.dataTransfer.setData("text/plain", id);
     });
 
     answers.appendChild(card);
   });
 
+  answers.addEventListener("dragover", e => e.preventDefault());
+  answers.addEventListener("drop", handleDropOnAnswers);
+
   layout.appendChild(imgBox);
   layout.appendChild(answers);
   gameArea.appendChild(layout);
 }
 
-function handleDrop(e) {
+function handleDropOnZone(e) {
   if (hasChecked) return;
 
   const vocabId = e.dataTransfer.getData("text/plain");
   const imageId = e.currentTarget.dataset.imageId;
 
-  // Remove previous assignment of this vocabId
+  // Clear previous assignment of this vocabId
   for (const key in dragAssignments) {
     if (dragAssignments[key] === vocabId) {
       dragAssignments[key] = null;
@@ -378,8 +416,25 @@ function handleDrop(e) {
   updateDropUI();
 }
 
+function handleDropOnAnswers(e) {
+  if (hasChecked) return;
+
+  const vocabId = e.dataTransfer.getData("text/plain");
+  if (!vocabId) return;
+
+  // Remove this vocabId from any image assignment
+  for (const key in dragAssignments) {
+    if (dragAssignments[key] === vocabId) {
+      dragAssignments[key] = null;
+    }
+  }
+
+  updateDropUI();
+}
+
 function updateDropUI() {
   const targets = gameArea.querySelectorAll(".drop-target");
+  const zones = gameArea.querySelectorAll(".drop-zone");
   const cards = gameArea.querySelectorAll(".draggable-card");
 
   targets.forEach(t => {
@@ -396,7 +451,12 @@ function updateDropUI() {
     }
   });
 
-  // Disable assigned cards
+  zones.forEach(z => {
+    const imageId = z.dataset.imageId;
+    const assigned = dragAssignments[imageId];
+    z.classList.toggle("filled", !!assigned);
+  });
+
   cards.forEach(card => {
     const id = card.dataset.id;
     const isUsed = Object.values(dragAssignments).includes(id);
@@ -466,6 +526,7 @@ function showFeedback(isCorrect) {
 // -------------------------
 function finishGame() {
   if (timerInterval) clearInterval(timerInterval);
+  timerEl.classList.add("hidden");
 
   document.getElementById("correct-count").textContent = correctCount;
   document.getElementById("wrong-count").textContent = wrongCount;
