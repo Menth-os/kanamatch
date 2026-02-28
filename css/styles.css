@@ -366,7 +366,7 @@ body {
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: clamp(0.7rem, 2.5vw, 0.85rem);
   min-width: 60%;
   text-align: center;
 }
