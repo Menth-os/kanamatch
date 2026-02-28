@@ -165,15 +165,24 @@ backBtn.addEventListener("click", () => {
 // -------------------------
 function buildQuestions(count) {
   const arr = [];
-  let prev = null;
+  let prevType = null;
+  let streak = 0;
 
   for (let i = 0; i < count; i++) {
+    let type;
+    if (streak >= 3) {
+      type = prevType === "single" ? "drag" : "single";
+    } else {
+      type = Math.random() < 0.5 ? "single" : "drag";
+      if (type === prevType) streak++;
+      else streak = 1;
+    }
+
     let q;
     let attempts = 0;
+    let prev = arr[arr.length - 1] || null;
 
     do {
-      const type = Math.random() < 0.5 ? "single" : "drag";
-
       if (type === "single") {
         const correct = vocab[Math.floor(Math.random() * vocab.length)];
         const distractors = pickRandomExcept(correct.id, 3);
@@ -206,7 +215,7 @@ function buildQuestions(count) {
     );
 
     arr.push(q);
-    prev = q;
+    prevType = type;
   }
 
   return arr;
@@ -275,6 +284,12 @@ function renderSingleChoice() {
   img.alt = "";
   imgBox.appendChild(img);
 
+  const overlay = document.createElement("div");
+  overlay.className = "single-choice-overlay empty";
+  overlay.textContent = "…";
+  overlay.id = "single-overlay";
+  imgBox.appendChild(overlay);
+
   const optBox = document.createElement("div");
   optBox.className = "single-choice-options";
 
@@ -294,6 +309,10 @@ function renderSingleChoice() {
       document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       selectedOptionId = opt.id;
+
+      overlay.textContent = label.textContent;
+      overlay.classList.remove("empty");
+
       checkBtn.disabled = false;
     });
 
@@ -348,13 +367,23 @@ function renderDragDrop() {
     img.src = v.image;
     img.alt = "";
 
-    const target = document.createElement("div");
-    target.className = "drop-target";
-    target.dataset.imageId = id;
-    target.textContent = "…";
+    const label = document.createElement("div");
+    label.className = "drop-label empty";
+    label.dataset.imageId = id;
+    label.textContent = "…";
+
+    const clearBtn = document.createElement("button");
+    clearBtn.className = "drop-clear";
+    clearBtn.textContent = "✕";
+    clearBtn.dataset.imageId = id;
+    clearBtn.addEventListener("click", () => {
+      if (hasChecked) return;
+      clearAssignmentForImage(id);
+    });
 
     zone.appendChild(img);
-    zone.appendChild(target);
+    zone.appendChild(label);
+    zone.appendChild(clearBtn);
     imgBox.appendChild(zone);
 
     zone.addEventListener("dragover", e => e.preventDefault());
@@ -404,7 +433,9 @@ function handleDropOnZone(e) {
   const vocabId = e.dataTransfer.getData("text/plain");
   const imageId = e.currentTarget.dataset.imageId;
 
-  // Clear previous assignment of this vocabId
+  if (!vocabId) return;
+
+  // Remove this vocabId from any other image
   for (const key in dragAssignments) {
     if (dragAssignments[key] === vocabId) {
       dragAssignments[key] = null;
@@ -422,7 +453,7 @@ function handleDropOnAnswers(e) {
   const vocabId = e.dataTransfer.getData("text/plain");
   if (!vocabId) return;
 
-  // Remove this vocabId from any image assignment
+  // Remove this vocabId from any image
   for (const key in dragAssignments) {
     if (dragAssignments[key] === vocabId) {
       dragAssignments[key] = null;
@@ -432,22 +463,30 @@ function handleDropOnAnswers(e) {
   updateDropUI();
 }
 
+function clearAssignmentForImage(imageId) {
+  const assigned = dragAssignments[imageId];
+  if (!assigned) return;
+  dragAssignments[imageId] = null;
+  updateDropUI();
+}
+
 function updateDropUI() {
-  const targets = gameArea.querySelectorAll(".drop-target");
+  const labels = gameArea.querySelectorAll(".drop-label");
   const zones = gameArea.querySelectorAll(".drop-zone");
   const cards = gameArea.querySelectorAll(".draggable-card");
 
-  targets.forEach(t => {
-    const imageId = t.dataset.imageId;
+  labels.forEach(l => {
+    const imageId = l.dataset.imageId;
     const assigned = dragAssignments[imageId];
 
     if (assigned) {
       const v = vocab.find(x => x.id === assigned);
-      t.textContent = `${v.kana}${v.kanji ? " (" + v.kanji + ")" : ""}`;
-      t.classList.add("filled");
+      l.textContent = `${v.kana}${v.kanji ? " (" + v.kanji + ")" : ""}`;
+      l.classList.remove("empty");
     } else {
-      t.textContent = "…";
-      t.classList.remove("filled");
+      l.textContent = "…";
+      l.classList.add("empty");
+      l.classList.remove("correct", "incorrect");
     }
   });
 
@@ -470,16 +509,16 @@ function updateDropUI() {
 function evaluateDragDrop() {
   let allCorrect = true;
 
-  const targets = gameArea.querySelectorAll(".drop-target");
+  const labels = gameArea.querySelectorAll(".drop-label");
 
-  targets.forEach(t => {
-    const imageId = t.dataset.imageId;
+  labels.forEach(l => {
+    const imageId = l.dataset.imageId;
     const assigned = dragAssignments[imageId];
 
     if (assigned === imageId) {
-      t.classList.add("correct");
+      l.classList.add("correct");
     } else {
-      t.classList.add("incorrect");
+      l.classList.add("incorrect");
       allCorrect = false;
     }
   });

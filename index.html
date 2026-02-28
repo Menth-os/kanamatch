@@ -67,8 +67,22 @@
       <!-- END SCREEN -->
       <section id="end-screen" class="card">
         <h2 data-i18n="end_title">Finished!</h2>
-        <p><span data-i18n="correct">Correct:</span> <span id="correct-count">0</span></p>
-        <p><span data-i18n="wrong">Wrong:</span> <span id="wrong-count">0</span></p>
+
+        <div class="result-row">
+          <div class="result-icon correct-icon">✓</div>
+          <div class="result-text">
+            <span data-i18n="correct">Correct:</span>
+            <span id="correct-count">0</span>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-icon wrong-icon">✕</div>
+          <div class="result-text">
+            <span data-i18n="wrong">Wrong:</span>
+            <span id="wrong-count">0</span>
+          </div>
+        </div>
 
         <button id="restart-btn" class="primary-btn" data-i18n="restart">
           Restart
