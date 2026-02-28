@@ -16,6 +16,8 @@ let hardMode = false;
 let timerInterval = null;
 let timeLeft = 120;
 
+let tapSelectedAnswer = null; // NEW: tap-to-select answer
+
 const QUESTION_COUNT = 10;
 
 // -------------------------
@@ -170,6 +172,7 @@ function buildQuestions(count) {
   for (let i = 0; i < count; i++) {
     let type;
 
+    // FIXED: no more than 3 identical types in a row
     if (streak >= 3) {
       type = prevType === "single" ? "drag" : "single";
       streak = 1;
@@ -245,6 +248,7 @@ function loadQuestion() {
   currentQuestion = questions[currentIndex];
   selectedOptionId = null;
   dragAssignments = {};
+  tapSelectedAnswer = null;
   hasChecked = false;
 
   checkBtn.disabled = true;
@@ -344,7 +348,7 @@ function evaluateSingleChoice() {
 }
 
 // -------------------------
-// DRAG & DROP
+// DRAG & DROP + TAP-TO-ASSIGN
 // -------------------------
 function renderDragDrop() {
   const q = currentQuestion;
@@ -385,8 +389,19 @@ function renderDragDrop() {
     });
     zone.appendChild(clearBtn);
 
+    // Drag support
     zone.addEventListener("dragover", e => e.preventDefault());
     zone.addEventListener("drop", handleDropOnZone);
+
+    // Tap-to-assign support
+    zone.addEventListener("click", () => {
+      if (hasChecked) return;
+      if (!tapSelectedAnswer) return;
+
+      assignAnswerToImage(tapSelectedAnswer, id);
+      tapSelectedAnswer = null;
+      updateDropUI();
+    });
 
     imgBox.appendChild(zone);
   });
@@ -409,12 +424,25 @@ function renderDragDrop() {
 
     card.appendChild(label);
 
+    // Drag
     card.addEventListener("dragstart", e => {
       if (hasChecked) {
         e.preventDefault();
         return;
       }
       e.dataTransfer.setData("text/plain", id);
+    });
+
+    // Tap-to-select
+    card.addEventListener("click", () => {
+      if (hasChecked) return;
+
+      if (card.classList.contains("disabled")) return;
+
+      tapSelectedAnswer = id;
+
+      document.querySelectorAll(".draggable-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
     });
 
     answers.appendChild(card);
@@ -428,6 +456,15 @@ function renderDragDrop() {
   gameArea.appendChild(layout);
 }
 
+function assignAnswerToImage(vocabId, imageId) {
+  for (const key in dragAssignments) {
+    if (dragAssignments[key] === vocabId) {
+      dragAssignments[key] = null;
+    }
+  }
+  dragAssignments[imageId] = vocabId;
+}
+
 function handleDropOnZone(e) {
   if (hasChecked) return;
 
@@ -436,14 +473,7 @@ function handleDropOnZone(e) {
 
   if (!vocabId) return;
 
-  for (const key in dragAssignments) {
-    if (dragAssignments[key] === vocabId) {
-      dragAssignments[key] = null;
-    }
-  }
-
-  dragAssignments[imageId] = vocabId;
-
+  assignAnswerToImage(vocabId, imageId);
   updateDropUI();
 }
 
@@ -469,9 +499,8 @@ function clearAssignmentForImage(imageId) {
 
 function updateDropUI() {
   const labels = gameArea.querySelectorAll(".drop-label");
-  const zones = gameArea.querySelectorAll(".drop-zone");
-  const cards = gameArea.querySelectorAll(".draggable-card");
   const clears = gameArea.querySelectorAll(".drop-clear");
+  const cards = gameArea.querySelectorAll(".draggable-card");
 
   labels.forEach(l => {
     const imageId = l.dataset.imageId;
@@ -497,6 +526,7 @@ function updateDropUI() {
     const id = card.dataset.id;
     const isUsed = Object.values(dragAssignments).includes(id);
     card.classList.toggle("disabled", isUsed);
+    card.classList.remove("selected");
   });
 
   const allAssigned = currentQuestion.imageIds.every(id => dragAssignments[id]);
@@ -527,7 +557,6 @@ function evaluateDragDrop() {
 
   showFeedback(allCorrect);
 }
-
 
 // -------------------------
 // CHECK & NEXT
