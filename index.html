@@ -11,8 +11,8 @@
 
     <header class="app-header">
       <h1>Japanese Match Game</h1>
+
       <div class="lang-select">
-        <label for="lang">Language:</label>
         <select id="lang">
           <option value="en">English</option>
           <option value="de">Deutsch</option>
@@ -67,14 +67,8 @@
       <!-- END SCREEN -->
       <section id="end-screen" class="card">
         <h2 data-i18n="end_title">Finished!</h2>
-        <p>
-          <span data-i18n="correct">Correct:</span>
-          <span id="correct-count">0</span>
-        </p>
-        <p>
-          <span data-i18n="wrong">Wrong:</span>
-          <span id="wrong-count">0</span>
-        </p>
+        <p><span data-i18n="correct">Correct:</span> <span id="correct-count">0</span></p>
+        <p><span data-i18n="wrong">Wrong:</span> <span id="wrong-count">0</span></p>
 
         <button id="restart-btn" class="primary-btn" data-i18n="restart">
           Restart

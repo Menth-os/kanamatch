@@ -523,3 +523,50 @@ body {
   font-size: 1.1rem;
   margin: 6px 0;
 }
+
+.lang-select {
+  margin-left: auto;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+}
+
+.lang-select select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.lang-select select:focus {
+  outline: none;
+}
+
+/* --- DROP ZONE FIX --- */
+.drop-zone {
+  border-radius: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.5);
+  background: radial-gradient(circle at top, #020617 0, #020617 60%, #020617 100%);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  position: relative;
+}
+
+.drop-zone.filled {
+  border-color: var(--accent);
+}
+
+/* Disable cards when assigned */
+.draggable-card.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}

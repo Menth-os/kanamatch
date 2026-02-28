@@ -14,7 +14,7 @@ let wrongCount = 0;
 
 let hardMode = false;
 let timerInterval = null;
-let timeLeft = 120; // 2 minutes
+let timeLeft = 120;
 
 const QUESTION_COUNT = 10;
 
@@ -76,17 +76,12 @@ const STRINGS = {
   }
 };
 
-// -------------------------
-// LANGUAGE HANDLING
-// -------------------------
 function updateLanguage() {
   const lang = langSelect.value;
   document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.dataset.i18n;
-    el.textContent = STRINGS[lang][key];
+    el.textContent = STRINGS[lang][el.dataset.i18n];
   });
 }
-
 langSelect.addEventListener("change", updateLanguage);
 
 // -------------------------
@@ -316,6 +311,7 @@ function renderDragDrop() {
 
     const zone = document.createElement("div");
     zone.className = "drop-zone";
+    zone.dataset.imageId = id;
 
     const img = document.createElement("img");
     img.src = v.image;
@@ -328,6 +324,10 @@ function renderDragDrop() {
     zone.appendChild(img);
     zone.appendChild(target);
     imgBox.appendChild(zone);
+
+    // Allow dropping anywhere inside zone
+    zone.addEventListener("dragover", e => e.preventDefault());
+    zone.addEventListener("drop", handleDrop);
   });
 
   const answers = document.createElement("div");
@@ -358,24 +358,50 @@ function renderDragDrop() {
   layout.appendChild(imgBox);
   layout.appendChild(answers);
   gameArea.appendChild(layout);
-
-  gameArea.querySelectorAll(".drop-target").forEach(t => {
-    t.addEventListener("dragover", e => e.preventDefault());
-    t.addEventListener("drop", handleDrop);
-  });
 }
 
 function handleDrop(e) {
   if (hasChecked) return;
 
   const vocabId = e.dataTransfer.getData("text/plain");
-  const imageId = e.target.dataset.imageId;
+  const imageId = e.currentTarget.dataset.imageId;
+
+  // Remove previous assignment of this vocabId
+  for (const key in dragAssignments) {
+    if (dragAssignments[key] === vocabId) {
+      dragAssignments[key] = null;
+    }
+  }
 
   dragAssignments[imageId] = vocabId;
 
-  const v = vocab.find(x => x.id === vocabId);
-  e.target.textContent = `${v.kana}${v.kanji ? " (" + v.kanji + ")" : ""}`;
-  e.target.classList.add("filled");
+  updateDropUI();
+}
+
+function updateDropUI() {
+  const targets = gameArea.querySelectorAll(".drop-target");
+  const cards = gameArea.querySelectorAll(".draggable-card");
+
+  targets.forEach(t => {
+    const imageId = t.dataset.imageId;
+    const assigned = dragAssignments[imageId];
+
+    if (assigned) {
+      const v = vocab.find(x => x.id === assigned);
+      t.textContent = `${v.kana}${v.kanji ? " (" + v.kanji + ")" : ""}`;
+      t.classList.add("filled");
+    } else {
+      t.textContent = "…";
+      t.classList.remove("filled");
+    }
+  });
+
+  // Disable assigned cards
+  cards.forEach(card => {
+    const id = card.dataset.id;
+    const isUsed = Object.values(dragAssignments).includes(id);
+    card.classList.toggle("disabled", isUsed);
+  });
 
   const allAssigned = currentQuestion.imageIds.every(id => dragAssignments[id]);
   checkBtn.disabled = !allAssigned;
@@ -384,7 +410,9 @@ function handleDrop(e) {
 function evaluateDragDrop() {
   let allCorrect = true;
 
-  gameArea.querySelectorAll(".drop-target").forEach(t => {
+  const targets = gameArea.querySelectorAll(".drop-target");
+
+  targets.forEach(t => {
     const imageId = t.dataset.imageId;
     const assigned = dragAssignments[imageId];
 
