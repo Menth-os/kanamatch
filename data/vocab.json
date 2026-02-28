@@ -1,42 +1,26 @@
 [
-  {
-    "id": "neko",
-    "kana": "ねこ",
-    "kanji": "猫",
-    "romaji": "neko",
-    "english": "cat",
-    "image": "assets/images/neko.png"
-  },
-  {
-    "id": "inu",
-    "kana": "いぬ",
-    "kanji": "犬",
-    "romaji": "inu",
-    "english": "dog",
-    "image": "assets/images/inu.png"
-  },
-  {
-    "id": "kuruma",
-    "kana": "くるま",
-    "kanji": "車",
-    "romaji": "kuruma",
-    "english": "car",
-    "image": "assets/images/kuruma.png"
-  },
-  {
-    "id": "ringo",
-    "kana": "りんご",
-    "kanji": "林檎",
-    "romaji": "ringo",
-    "english": "apple",
-    "image": "assets/images/ringo.png"
-  },
-  {
-    "id": "mizu",
-    "kana": "みず",
-    "kanji": "水",
-    "romaji": "mizu",
-    "english": "water",
-    "image": "assets/images/mizu.png"
-  }
+  { "id": "asa", "kana": "あさ", "kanji": "朝", "english": "morning", "image": "assets/images/asa.png" },
+  { "id": "daigaku", "kana": "だいがく", "kanji": "大学", "english": "university", "image": "assets/images/daigaku.png" },
+  { "id": "denja", "kana": "でんしゃ", "kanji": "電車", "english": "train", "image": "assets/images/denja.png" },
+  { "id": "gakusei", "kana": "がくせい", "kanji": "学生", "english": "student", "image": "assets/images/gakusei.png" },
+  { "id": "gohan", "kana": "ごはん", "kanji": "ご飯", "english": "rice / meal", "image": "assets/images/gohan.png" },
+  { "id": "hiru", "kana": "ひる", "kanji": "昼", "english": "noon / daytime", "image": "assets/images/hiru.png" },
+  { "id": "inu", "kana": "いぬ", "kanji": "犬", "english": "dog", "image": "assets/images/inu.png" },
+  { "id": "kawa", "kana": "かわ", "kanji": "川", "english": "river", "image": "assets/images/kawa.png" },
+  { "id": "kuchi", "kana": "くち", "kanji": "口", "english": "mouth", "image": "assets/images/kuchi.png" },
+  { "id": "kuruma", "kana": "くるま", "kanji": "車", "english": "car", "image": "assets/images/kuruma.png" },
+  { "id": "me", "kana": "め", "kanji": "目", "english": "eye", "image": "assets/images/me.png" },
+  { "id": "mimi", "kana": "みみ", "kanji": "耳", "english": "ear", "image": "assets/images/mimi.png" },
+  { "id": "mizu", "kana": "みず", "kanji": "水", "english": "water", "image": "assets/images/mizu.png" },
+  { "id": "neko", "kana": "ねこ", "kanji": "猫", "english": "cat", "image": "assets/images/neko.png" },
+  { "id": "ocha", "kana": "おちゃ", "kanji": "お茶", "english": "tea", "image": "assets/images/ocha.png" },
+  { "id": "ringo", "kana": "りんご", "kanji": "林檎", "english": "apple", "image": "assets/images/ringo.png" },
+  { "id": "sakana", "kana": "さかな", "kanji": "魚", "english": "fish", "image": "assets/images/sakana.png" },
+  { "id": "sensei", "kana": "せんせい", "kanji": "先生", "english": "teacher", "image": "assets/images/sensei.png" },
+  { "id": "sora", "kana": "そら", "kanji": "空", "english": "sky", "image": "assets/images/sora.png" },
+  { "id": "te", "kana": "て", "kanji": "手", "english": "hand", "image": "assets/images/te.png" },
+  { "id": "tori", "kana": "とり", "kanji": "鳥", "english": "bird", "image": "assets/images/tori.png" },
+  { "id": "umi", "kana": "うみ", "kanji": "海", "english": "sea", "image": "assets/images/umi.png" },
+  { "id": "yama", "kana": "やま", "kanji": "山", "english": "mountain", "image": "assets/images/yama.png" },
+  { "id": "yoru", "kana": "よる", "kanji": "夜", "english": "night", "image": "assets/images/yoru.png" }
 ]
